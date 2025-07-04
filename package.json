@@ -1,9 +1,0 @@
-{
-  "name": "connectivity-api",
-  "private": true,
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "uvicorn main:app --reload --port 8000",
-    "start": "uvicorn main:app --host 0.0.0.0 --port 8000"
-  }
-}

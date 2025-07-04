@@ -1,6 +1,7 @@
 import subprocess
 import re
 import platform
+import os
 from datetime import datetime
 from typing import Dict, List
 import socket
@@ -155,9 +156,40 @@ def traceroute(host: str, max_hops: int = 30) -> List[Dict]:
     system = platform.system().lower()
     
     if system == "windows":
+        # En Windows el comando es tracert y suele estar en el PATH
         cmd = ["tracert", "-h", str(max_hops), host]
     else:
-        cmd = ["traceroute", "-n", "-m", str(max_hops), host]
+        # En Linux/Unix buscar traceroute en ubicaciones comunes
+        traceroute_paths = [
+            "traceroute",           # Si está en el PATH
+            "/usr/bin/traceroute",  # Ubicación común
+            "/usr/sbin/traceroute", # Ubicación en algunas distros
+            "/bin/traceroute"       # Otra ubicación posible
+        ]
+        
+        # Encontrar el primer path que exista
+        traceroute_path = None
+        for path in traceroute_paths:
+            try:
+                # Verificar si el comando existe y es ejecutable
+                if path == "traceroute":
+                    # Comprobar si está en el PATH
+                    result = subprocess.run(["which", "traceroute"], 
+                                           capture_output=True, text=True, check=False)
+                    if result.returncode == 0:
+                        traceroute_path = "traceroute"
+                        break
+                elif os.path.isfile(path) and os.access(path, os.X_OK):
+                    traceroute_path = path
+                    break
+            except:
+                continue
+        
+        # Si no se encuentra, usar el valor por defecto
+        if not traceroute_path:
+            traceroute_path = "traceroute"  # Intentar con el comando básico
+            
+        cmd = [traceroute_path, "-n", "-m", str(max_hops), host]
     
     try:
         proc = subprocess.run(cmd, text=True, capture_output=True, timeout=60)

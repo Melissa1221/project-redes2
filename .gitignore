@@ -1,2 +1,5 @@
-node_modules
+pycache
 .env
+__pycache__
+.bolt
+venv
